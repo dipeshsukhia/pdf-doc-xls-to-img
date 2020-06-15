@@ -17,7 +17,7 @@
         "laravel/tinker": "^2.0",
         "laravel/ui": "^2.0",
         "org_heigl/ghostscript": "^2.3",
-        "spatie/pdf-to-image": "^2.0.1"
+        "spatie/pdf-to-image": "2.0.1"
     },
     "require-dev": {
         "dipeshsukhia/laravel-remove-public-url": "^1.0",
