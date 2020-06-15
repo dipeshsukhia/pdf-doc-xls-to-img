@@ -14,7 +14,7 @@
             <div class="col-lg-12">
                 @if(count($files))
                 @foreach($files as $file)
-                    <div class="col-sm-3 d-inline-block">
+                    <div class="col-sm-2 d-inline-block card">
                         <img src="{{asset(Storage::url('uploads/'.$file))}}" width="150">
                     </div>
                 @endforeach
