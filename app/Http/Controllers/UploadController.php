@@ -71,10 +71,11 @@ class UploadController extends Controller
     public function show(Upload $upload)
     {
         $name = pathinfo($upload->name, PATHINFO_FILENAME);
+        $files = [];
         foreach (glob(storage_path('app/public/uploads/'.$name.'_page*.jpeg')) as $file) {
-            $files[] = $file;
+            $files[] = pathinfo($file,PATHINFO_BASENAME);
         }
-        dd($file);
+        return view('upload.show',compact('files'));
     }
 
     /**
