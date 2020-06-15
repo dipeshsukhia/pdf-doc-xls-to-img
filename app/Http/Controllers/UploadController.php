@@ -57,7 +57,7 @@ class UploadController extends Controller
         $pdf = new Pdf(storage_path('app/public/'.$filePath));
         foreach (range(1, $pdf->getNumberOfPages()) as $pageNumber) {
             $pdf->setPage($pageNumber)
-                ->saveImage(storage_path('app/public/uploads/'.$name.'_page'.$pageNumber));
+                ->saveImage(storage_path('app/public/uploads/'.$name.'_page'.$pageNumber.'.jpeg'));
         }
         return redirect()->route('uploads.index');
     }
