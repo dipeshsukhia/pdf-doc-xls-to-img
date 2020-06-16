@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Upload;
+use Dompdf\Dompdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Org_Heigl\Ghostscript\Ghostscript;
 use Spatie\PdfToImage\Pdf;
+use PhpOffice\PhpWord;
 
 class UploadController extends Controller
 {
@@ -41,7 +43,7 @@ class UploadController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'file' => 'required'
+            'file' => 'required|mimes:pdf,doc,docx'
         ]);
         $name = \Str::slug(basename($request->file->getClientOriginalName(), $request->file->getClientOriginalExtension())) . '-' . time();
         $filePath = Storage::disk('public')
@@ -59,6 +61,16 @@ class UploadController extends Controller
 
     public function pdfToImg($filePath){
         $name = pathinfo($filePath, PATHINFO_FILENAME);
+        $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        if($extension != "pdf"){
+            $domPdfPath = base_path( 'vendor/dompdf/dompdf');
+            PhpWord\Settings::setPdfRendererPath($domPdfPath);
+            PhpWord\Settings::setPdfRendererName('DomPDF');
+            $phpWord = new PhpWord\PhpWord();
+            $phpWord = PhpWord\IOFactory::load(storage_path('app/public/'.$filePath));
+            $xmlWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord , 'PDF');
+            $xmlWriter->save(storage_path("app/public/uploads/{$name}.pdf"));
+        }
         //Ghostscript::setGsPath("C:\Program Files\gs\gs9.52\bin\gswin64c.exe");
         $pdf = new Pdf(storage_path('app/public/uploads/'.$name.'.pdf'));
         foreach (range(1, $pdf->getNumberOfPages()) as $pageNumber) {

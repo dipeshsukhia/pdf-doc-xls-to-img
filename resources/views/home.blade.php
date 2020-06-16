@@ -13,12 +13,21 @@
                             {{ session('status') }}
                         </div>
                     @endif
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <ul>
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
 
                         <form action="{{ route('uploads.store') }}" method="post" enctype="multipart/form-data">
                             @csrf
                             <div class="form-group">
                                 <label for="email">Upload file:</label>
-                                <input type="file" name="file" class="form-control" placeholder="upload pdf" accept="application/pdf">
+                                <input type="file" name="file" class="form-control" placeholder="upload document">
                             </div>
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </form>
