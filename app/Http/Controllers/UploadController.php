@@ -50,16 +50,30 @@ class UploadController extends Controller
                 $request->file('file'),
                 $name.".".$request->file->getClientOriginalExtension()
             );
-        $create = Upload::create([
+        $upload = Upload::create([
            'name' => $filePath
         ]);
+        self::pdfToImg($upload->name);
+        return redirect()->route('uploads.index');
+    }
+
+    public function pdfToImg($filePath){
+        $name = pathinfo($filePath, PATHINFO_FILENAME);
         //Ghostscript::setGsPath("C:\Program Files\gs\gs9.52\bin\gswin64c.exe");
-        $pdf = new Pdf(storage_path('app/public/'.$filePath));
+        $pdf = new Pdf(storage_path('app/public/uploads/'.$name.'.pdf'));
         foreach (range(1, $pdf->getNumberOfPages()) as $pageNumber) {
             $pdf->setPage($pageNumber)
                 ->saveImage(storage_path('app/public/uploads/'.$name.'_page'.$pageNumber.'.jpeg'));
         }
-        return redirect()->route('uploads.index');
+    }
+
+    public function getPdfImg($filePath){
+        $name = pathinfo($filePath, PATHINFO_FILENAME);
+        $files = [];
+        foreach (glob(storage_path('app/public/uploads/'.$name.'_page*.jpeg')) as $file) {
+            $files[] = pathinfo($file,PATHINFO_BASENAME);
+        }
+        return $files;
     }
 
     /**
@@ -70,11 +84,7 @@ class UploadController extends Controller
      */
     public function show(Upload $upload)
     {
-        $name = pathinfo($upload->name, PATHINFO_FILENAME);
-        $files = [];
-        foreach (glob(storage_path('app/public/uploads/'.$name.'_page*.jpeg')) as $file) {
-            $files[] = pathinfo($file,PATHINFO_BASENAME);
-        }
+        $files = self::pdfToImg($upload->name);
         return view('upload.show',compact('files'));
     }
 

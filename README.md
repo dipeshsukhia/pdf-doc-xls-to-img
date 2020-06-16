@@ -77,3 +77,16 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+Imagick and Ghostscript  extension
+
+ sudo apt-get install ghostscript
+ sudo apt-get install gcc php-devel php-pear
+ sudo apt-get install imagick
+ sudo apt-get install php-imagick
+
+
+for this error edit the /etc/ImageMagick-6/policy.xml and changed the rights for the pdf line to "read"
+
+<policy domain="coder" rights="read" pattern="PDF" />
