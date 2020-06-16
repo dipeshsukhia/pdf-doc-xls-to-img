@@ -84,7 +84,7 @@ class UploadController extends Controller
      */
     public function show(Upload $upload)
     {
-        $files = self::pdfToImg($upload->name);
+        $files = self::getPdfImg($upload->name);
         return view('upload.show',compact('files'));
     }
 
