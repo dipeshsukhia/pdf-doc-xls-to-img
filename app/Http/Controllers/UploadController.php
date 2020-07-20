@@ -21,7 +21,7 @@ class UploadController extends Controller
     public function index()
     {
         $data = Upload::paginate(10);
-        return view('upload.list',compact('data'));
+        return view('upload.list', compact('data'));
     }
 
     /**
@@ -37,7 +37,7 @@ class UploadController extends Controller
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
@@ -50,40 +50,55 @@ class UploadController extends Controller
             ->putFileAs(
                 'uploads',
                 $request->file('file'),
-                $name.".".$request->file->getClientOriginalExtension()
+                $name . "." . $request->file->getClientOriginalExtension()
             );
         $upload = Upload::create([
-           'name' => $filePath
+            'name' => $filePath
         ]);
         self::pdfToImg($upload->name);
         return redirect()->route('uploads.index');
     }
 
-    public function pdfToImg($filePath){
+    public function pdfToImg($filePath)
+    {
         $name = pathinfo($filePath, PATHINFO_FILENAME);
         $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-        if($extension != "pdf"){
-            $domPdfPath = base_path( 'vendor/dompdf/dompdf');
-            PhpWord\Settings::setPdfRendererPath($domPdfPath);
-            PhpWord\Settings::setPdfRendererName('DomPDF');
-            $phpWord = new PhpWord\PhpWord();
-            $phpWord = PhpWord\IOFactory::load(storage_path('app/public/'.$filePath));
-            $xmlWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord , 'PDF');
-            $xmlWriter->save(storage_path("app/public/uploads/{$name}.pdf"));
+        $domPdfPath = base_path('vendor/dompdf/dompdf');
+
+        switch ($extension) {
+            case 'xls':
+            case 'xlsx':
+                $phpWord_xls = \PhpOffice\PhpSpreadsheet\IOFactory::load(storage_path('app/public/' . $filePath));
+                $objWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($phpWord_xls, 'Dompdf');
+                $objWriter->save(storage_path("app/public/uploads/{$name}.pdf"));
+                break;
+            case 'doc':
+            case 'docx':
+                PhpWord\Settings::setPdfRendererPath($domPdfPath);
+                PhpWord\Settings::setPdfRendererName('DomPDF');
+                $phpWord = new PhpWord\PhpWord();
+                $phpWord = PhpWord\IOFactory::load(storage_path('app/public/' . $filePath));
+                $xmlWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'PDF');
+                $xmlWriter->save(storage_path("app/public/uploads/{$name}.pdf"));
+                break;
         }
+
         //Ghostscript::setGsPath("C:\Program Files\gs\gs9.52\bin\gswin64c.exe");
-        $pdf = new Pdf(storage_path('app/public/uploads/'.$name.'.pdf'));
-        foreach (range(1, $pdf->getNumberOfPages()) as $pageNumber) {
-            $pdf->setPage($pageNumber)
-                ->saveImage(storage_path('app/public/uploads/'.$name.'_page'.$pageNumber.'.jpeg'));
+        if (file_exists(storage_path('app/public/uploads/' . $name . '.pdf'))) {
+            $pdf = new Pdf(storage_path('app/public/uploads/' . $name . '.pdf'));
+            foreach (range(1, $pdf->getNumberOfPages()) as $pageNumber) {
+                $pdf->setPage($pageNumber)
+                    ->saveImage(storage_path('app/public/uploads/' . $name . '_page' . $pageNumber . '.jpeg'));
+            }
         }
     }
 
-    public function getPdfImg($filePath){
+    public function getPdfImg($filePath)
+    {
         $name = pathinfo($filePath, PATHINFO_FILENAME);
         $files = [];
-        foreach (glob(storage_path('app/public/uploads/'.$name.'_page*.jpeg')) as $file) {
-            $files[] = pathinfo($file,PATHINFO_BASENAME);
+        foreach (glob(storage_path('app/public/uploads/' . $name . '_page*.jpeg')) as $file) {
+            $files[] = pathinfo($file, PATHINFO_BASENAME);
         }
         return $files;
     }
@@ -91,19 +106,19 @@ class UploadController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Upload  $upload
+     * @param \App\Upload $upload
      * @return \Illuminate\Http\Response
      */
     public function show(Upload $upload)
     {
         $files = self::getPdfImg($upload->name);
-        return view('upload.show',compact('files'));
+        return view('upload.show', compact('files'));
     }
 
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\Upload  $upload
+     * @param \App\Upload $upload
      * @return \Illuminate\Http\Response
      */
     public function edit(Upload $upload)
@@ -114,8 +129,8 @@ class UploadController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Upload  $upload
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Upload $upload
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, Upload $upload)
@@ -126,7 +141,7 @@ class UploadController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Upload  $upload
+     * @param \App\Upload $upload
      * @return \Illuminate\Http\Response
      */
     public function destroy(Upload $upload)
